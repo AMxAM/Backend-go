@@ -2,16 +2,22 @@ package handlers
 
 import (
 	"net/http"
-	"os"
 	"path/filepath"
 
+	"github.com/alexander/go-api-hex/internal/infrastructure/storage"
 	"github.com/gin-gonic/gin"
 )
 
-type UploadHandler struct{}
+type UploadHandler struct {
+	storage *storage.S3Storage
+}
 
-func NewUploadHandler() *UploadHandler {
-	return &UploadHandler{}
+func NewUploadHandler(
+	storage *storage.S3Storage,
+) *UploadHandler {
+	return &UploadHandler{
+		storage: storage,
+	}
 }
 
 func (h *UploadHandler) Upload(c *gin.Context) {
@@ -24,25 +30,23 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 		return
 	}
 
-	if err := os.MkdirAll("uploads", os.ModePerm); err != nil {
+	src, err := file.Open()
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
+	defer src.Close()
 
 	filename := filepath.Base(file.Filename)
 
-	path := filepath.Join(
-		"uploads",
+	url, err := h.storage.Upload(
 		filename,
+		src,
 	)
 
-	if err := c.SaveUploadedFile(
-		file,
-		path,
-	); err != nil {
-
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
 		})
@@ -51,6 +55,6 @@ func (h *UploadHandler) Upload(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"filename": filename,
-		"url": "/uploads/" + filename,
+		"url":      url,
 	})
 }

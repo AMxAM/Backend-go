@@ -6,6 +6,7 @@ variable "aws_region" {
 variable "lambda_function_name" {
   description = "Nombre de la función Lambda"
   type        = string
+  default = "go-api-hex"
 }
 
 variable "jwt_secret" {

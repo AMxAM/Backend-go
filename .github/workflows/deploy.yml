@@ -8,14 +8,30 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: terraform
-
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install Dependencies
+        run: go mod tidy
+
+      - name: Run Tests
+        run: go test ./...
+
+      - name: Build Lambda
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o bootstrap ./cmd/lambda
+
+      - name: Package Lambda
+        run: |
+          cd terraform
+          zip -j lambda.zip ../bootstrap
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -28,13 +44,17 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Terraform Init
+        working-directory: terraform
         run: terraform init
 
       - name: Terraform Validate
+        working-directory: terraform
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan
+        working-directory: terraform
+        run: terraform plan -input=false
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        working-directory: terraform
+        run: terraform apply -auto-approve -input=false

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/alexander/go-api-hex/internal/infrastructure/storage"
 	"github.com/alexander/go-api-hex/internal/application/ports"
 	"github.com/alexander/go-api-hex/internal/infrastructure/http/handlers"
 	"github.com/alexander/go-api-hex/internal/infrastructure/http/middleware"
@@ -13,14 +14,17 @@ func NewRouter(
 	userSvc ports.UserService,
 	authSvc ports.AuthService,
 	tokens ports.TokenService,
+	s3Storage *storage.S3Storage,
 ) *gin.Engine {
 	r := gin.Default()
 
-	r.Static("/uploads", "./uploads")
+	
 
 	userH := handlers.NewUserHandler(userSvc)
 	authH := handlers.NewAuthHandler(authSvc)
-	uploadH := handlers.NewUploadHandler()
+	uploadH := handlers.NewUploadHandler(
+	s3Storage,
+)
 
 	// Health check
 	r.GET("/health", func(c *gin.Context) {

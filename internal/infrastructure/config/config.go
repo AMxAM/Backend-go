@@ -1,5 +1,6 @@
 package config
 
+
 import (
 	"fmt"
 	"os"
@@ -13,6 +14,9 @@ import (
 type Config struct {
 	HTTPPort    string
 	DatabaseURL string
+
+	AWSRegion string
+	AWSBucket string
 
 	DBHost     string
 	DBPort     string
@@ -42,6 +46,9 @@ func Load() (*Config, error) {
 		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
 
 		JWTSecret: getEnv("JWT_SECRET", "cambia-este-secreto"),
+
+		AWSRegion: getEnv("AWS_REGION", "us-east-2"),
+		AWSBucket: getEnv("AWS_BUCKET_NAME", ""),
 	}
 
 	expireHours, _ := strconv.Atoi(getEnv("JWT_EXPIRE_HOURS", "24"))
