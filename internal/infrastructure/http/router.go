@@ -8,8 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// NewRouter compone todas las rutas de la API.
-// Recibe los puertos (use cases) ya instanciados.
+
 func NewRouter(
 	userSvc ports.UserService,
 	authSvc ports.AuthService,
