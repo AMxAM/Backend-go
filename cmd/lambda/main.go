@@ -16,7 +16,7 @@ import (
 	"github.com/alexander/go-api-hex/internal/infrastructure/persistence"
 	"github.com/alexander/go-api-hex/internal/infrastructure/storage"
 	"github.com/alexander/go-api-hex/internal/infrastructure/notifications"
-	"net/smtp"
+	
 )
 
 var ginLambda *ginadapter.GinLambda
@@ -91,12 +91,6 @@ func Handler(
 		req,
 	)
 }
-
-func sendEmail(
-	to string,
-	subject string,
-	body string,
-) error
 
 func main() {
 	lambda.Start(Handler)
