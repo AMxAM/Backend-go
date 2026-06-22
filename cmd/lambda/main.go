@@ -15,6 +15,8 @@ import (
 	httpinfra "github.com/alexander/go-api-hex/internal/infrastructure/http"
 	"github.com/alexander/go-api-hex/internal/infrastructure/persistence"
 	"github.com/alexander/go-api-hex/internal/infrastructure/storage"
+	"github.com/alexander/go-api-hex/internal/infrastructure/notifications"
+	"net/smtp"
 )
 
 var ginLambda *ginadapter.GinLambda
@@ -48,6 +50,12 @@ func init() {
 		log.Fatal(err)
 	}
 
+	snsService, err := notifications.NewSNSService()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	userSvc := services.NewUserService(
 		userRepo,
 		pwdHasher,
@@ -65,6 +73,7 @@ func init() {
 		authSvc,
 		tokenSvc,
 		s3Storage,
+		snsService,
 	)
 
 	ginLambda = ginadapter.New(router)
@@ -82,6 +91,12 @@ func Handler(
 		req,
 	)
 }
+
+func sendEmail(
+	to string,
+	subject string,
+	body string,
+) error
 
 func main() {
 	lambda.Start(Handler)

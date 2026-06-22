@@ -10,6 +10,7 @@ import (
 	httpinfra "github.com/alexander/go-api-hex/internal/infrastructure/http"
 	"github.com/alexander/go-api-hex/internal/infrastructure/persistence"
 	"github.com/alexander/go-api-hex/internal/infrastructure/storage"
+	"github.com/alexander/go-api-hex/internal/infrastructure/notifications"
 )
 
 func main() {
@@ -40,6 +41,12 @@ func main() {
 		)
 	}
 
+	snsService, err := notifications.NewSNSService()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	
 	// 5. Construir servicios de aplicación
 	userSvc := services.NewUserService(userRepo, pwdHasher)
 	authSvc := services.NewAuthService(
@@ -55,6 +62,7 @@ func main() {
 		authSvc,
 		tokenSvc,
 		s3Storage,
+		snsService,
 	)
 
 	addr := ":" + cfg.HTTPPort

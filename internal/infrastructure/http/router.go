@@ -6,6 +6,7 @@ import (
 	"github.com/alexander/go-api-hex/internal/infrastructure/http/handlers"
 	"github.com/alexander/go-api-hex/internal/infrastructure/http/middleware"
 	"github.com/gin-gonic/gin"
+	"github.com/alexander/go-api-hex/internal/infrastructure/notifications"
 )
 
 
@@ -14,16 +15,23 @@ func NewRouter(
 	authSvc ports.AuthService,
 	tokens ports.TokenService,
 	s3Storage *storage.S3Storage,
+	snsService *notifications.SNSService,
 ) *gin.Engine {
 	r := gin.Default()
 
 	
 
 	userH := handlers.NewUserHandler(userSvc)
+
 	authH := handlers.NewAuthHandler(authSvc)
+
 	uploadH := handlers.NewUploadHandler(
-	s3Storage,
-)
+		s3Storage,
+	)
+
+	notificationH := handlers.NewNotificationHandler(
+		snsService,
+	)
 
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
@@ -50,7 +58,17 @@ func NewRouter(
 		users.DELETE("/:id", userH.Delete)
 	}
 
-	api.POST("/upload", uploadH.Upload)
+	
 
+	notifications := api.Group("/notifications")
+	{
+		notifications.POST(
+			"/send",
+			notificationH.Send,
+		)
+	}	
+
+	api.POST("/upload", uploadH.Upload)
+	
 	return r
 }
